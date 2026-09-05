@@ -9,7 +9,6 @@ import { Input } from './ui/input';
 import Image from 'next/image';
 import { useToast } from './ui/use-toast';
 import { useAction, useMutation } from 'convex/react';
-import { useUploadFiles } from '@xixixao/uploadstuff/react';
 import { api } from '@/convex/_generated/api';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,7 +18,6 @@ const GenerateThumbnail = ({ setImage, setImageStorageId, image, imagePrompt, se
   const imageRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
-  const { startUpload } = useUploadFiles(generateUploadUrl)
   const getImageUrl = useMutation(api.podcasts.getUrl);
   const handleGenerateThumbnail = useAction(api.openai.generateThumbnailAction)
 
