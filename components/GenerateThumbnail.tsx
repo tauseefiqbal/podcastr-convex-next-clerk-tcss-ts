@@ -22,28 +22,38 @@ const GenerateThumbnail = ({ setImage, setImageStorageId, image, imagePrompt, se
   const handleGenerateThumbnail = useAction(api.openai.generateThumbnailAction)
 
   const handleImage = async (blob: Blob, fileName: string) => {
-    setIsImageLoading(true);
-    setImage('');
+  setIsImageLoading(true);
+  setImage('');
 
-    try {
-      const file = new File([blob], fileName, { type: 'image/png' });
+  try {
+    const file = new File([blob], fileName, { type: 'image/png' });
 
-      const uploaded = await startUpload([file]);
-      const storageId = (uploaded[0].response as any).storageId;
+    // 1. Get upload URL from Convex
+    const uploadUrl = await generateUploadUrl();
 
-      setImageStorageId(storageId);
+    // 2. Upload file to Convex storage
+    const uploadRes = await fetch(uploadUrl, {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
 
-      const imageUrl = await getImageUrl({ storageId });
-      setImage(imageUrl!);
-      setIsImageLoading(false);
-      toast({
-        title: "Thumbnail generated successfully",
-      })
-    } catch (error) {
-      console.log(error)
-      toast({ title: 'Error generating thumbnail', variant: 'destructive'})
-    }
+    // 3. Extract storageId from Convex response
+    const { storageId } = await uploadRes.json();
+    setImageStorageId(storageId);
+
+    // 4. Get public URL from Convex
+    const imageUrl = await getImageUrl({ storageId });
+    setImage(imageUrl!);
+
+    setIsImageLoading(false);
+    toast({ title: "Thumbnail generated successfully" });
+  } catch (error) {
+    console.log(error);
+    toast({ title: "Error generating thumbnail", variant: "destructive" });
+    setIsImageLoading(false);
   }
+};
 
   const generateImage = async () => {
     try {
@@ -111,7 +121,7 @@ const GenerateThumbnail = ({ setImage, setImageStorageId, image, imagePrompt, se
             />
           </div>
           <div className="w-full max-w-[200px]">
-          <Button type="submit" className="text-16 bg-orange-1 py-4 font-bold text-white-1" onClick={generateImage}>
+          <Button type="button" className="text-16 bg-orange-1 py-4 font-bold text-white-1" onClick={generateImage}>
             {isImageLoading ? (
               <>
                 Generating
