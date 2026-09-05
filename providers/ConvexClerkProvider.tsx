@@ -5,7 +5,11 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
 import { ReactNode } from "react";
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL as string);
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+
+// Fallback avoids crashing prerender when the env var isn't configured (e.g. missing on Vercel);
+// the real URL is required at runtime for Convex calls to work.
+const convex = new ConvexReactClient(convexUrl || "https://placeholder.convex.cloud");
 
 const ConvexClerkProvider = ({ children }: { children: ReactNode }) => (
   <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY as string} appearance={{
